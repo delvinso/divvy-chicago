@@ -21,9 +21,9 @@ editor_options:
 
 ## Pre-Face
 
-I came across Todd Schneider's posts on [NYC taxi and uber trips](LINK) and subsequently another post on [Citi Bike](http://toddwschneider.com/posts/a-tale-of-twenty-two-million-citi-bikes-analyzing-the-nyc-bike-share-system/). He made his [code available](https://github.com/toddwschneider/nyc-citibike-data) and as an aspiring data analyst who also uses R, I took the opportunity to do a similar analysis with Chicago's Divvy Bikeshare data with modifications of my own.
+I came across Todd Schneider's posts on [NYC taxi and uber trips](LINK) and subsequently another post on [Citi Bike](http://toddwschneider.com/posts/a-tale-of-twenty-two-million-citi-bikes-analyzing-the-nyc-bike-share-system/).  He made his [code available](https://github.com/toddwschneider/nyc-citibike-data) and as an aspiring data analyst who also uses R, I took the opportunity to do a similar analysis with Chicago's Divvy Bikeshare data with modifications of my own.
 
-The analysis is broken down into several categories.
+Code accompanying this post can be found in my [github repo](https://github.com/delvinso/divvy-github)
 
 ##### Future Directions
 
