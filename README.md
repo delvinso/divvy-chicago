@@ -30,7 +30,7 @@ Downloads the raw trip data from 2013 - 2017 into the sub-directory /data within
 SQL queries and analyses can be found in `analyses/`.
 
 
-4) 04_get_legs_routes.R DON"T FORGET TO REMOVE THE KEY DELVIN!!!!!!!!
+4) 04_get_legs_routes.R 
 
 
 
