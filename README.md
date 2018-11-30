@@ -30,11 +30,11 @@ SQL queries and analyses can be found in `analyses/`.
 
 #### Static Heat Map of Trips
 
-Additionally, if one wants to recreate the static heat map, look at 04_get_legs_routes.R.
+Additionally, if one wants to recreate the static heat map, look at `get_legs_routes_key_rm.R`.
 
-##### NOTE: This may cost $$$$ with the new pricing changes Google implemented with their Google Maps API mid-July 2018. May want to consider looking into OSRM as a free, open-source alternative.
+**NOTE: This may cost $$$$ with the new pricing changes Google implemented with their Google Maps API mid-July 2018. May want to consider looking into OSRM as a free, open-source alternative.**
 
-The legs can then be imported using `04_import_legs.sh`, making sure to run it from the top level directory of the repo or
+The legs can then be imported using `04_import_legs.sh`, making sure to run it from the top level directory of the repo or the following command in a unix terminal:
 
 `psql chicago-divvy-data -c "SET datestyle = 'ISO, MDY'; COPY legs FROM 'ABSOLUTE_PATH/data/legs_start_end.csv' CSV HEADER;". `
 
