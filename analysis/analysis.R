@@ -819,3 +819,197 @@ dev.off()
 # clean up
 rm(anon_daily, anon_hourly)
 
+
+
+## ---- choloropeth of morning and night start and end community areas ----
+
+
+wday_morn_start <- query("
+      SELECT
+        ss.commarea AS start_commarea,
+        SUM(trips) AS total,
+        COUNT(DISTINCT date) AS num_days
+      FROM
+        weekday_sts_hourly w,
+        stations ss
+      WHERE w.start_station_id = ss.id
+        AND hour BETWEEN 6 AND 9
+      GROUP BY start_commarea")
+
+wday_morn_start %>% mutate(avg = total/num_days) %>% arrange(desc(avg))
+
+wday_morn_end <- query("
+                       SELECT
+                        es.commarea AS end_commarea,
+                        SUM(trips) AS total,
+                        COUNT(DISTINCT date) AS num_days
+                       FROM
+                        weekday_sts_hourly w,
+                        stations es
+                       WHERE w.end_station_id = es.id
+                        AND hour BETWEEN 6 AND 9
+                       GROUP BY end_commarea")
+wday_morn_end %>% mutate(avg = total/num_days) %>% arrange(desc(avg))
+
+
+wday_night_start <- query("SELECT
+                            ss.commarea AS start_commarea,
+                            SUM(trips) AS total,
+                            COUNT(DISTINCT date) AS num_days
+                          FROM
+                            weekday_sts_hourly w,
+                            stations ss
+                          WHERE w.start_station_id = ss.id
+                            AND hour BETWEEN 16 and 19
+                          GROUP BY start_commarea")
+
+wday_night_start %>% mutate(avg = total/num_days) %>% arrange(desc(avg))
+
+
+wday_night_end <- query("SELECT
+                            es.commarea AS end_commarea,
+                          SUM(trips) AS total,
+                          COUNT(DISTINCT date) AS num_days
+                          FROM
+                          weekday_sts_hourly w,
+                          stations es
+                          WHERE w.end_station_id = es.id
+                          AND hour BETWEEN 16 and 19
+                          GROUP BY end_commarea")
+
+wday_night_end %>% mutate(avg = total/num_days) %>% arrange(desc(avg))
+
+# bind_rows(wday_morn_start %>% mutate(type = "morn") %>% rename(community = "start_commarea"),
+#           wday_morn_end %>% mutate(type = "night") %>%  rename(community = "end_commarea")) %>%
+#   group_by(type, community) %>%
+#   mutate(avg = total/num_days) %>%
+#   inner_join(area_map, by = "community") %>%
+#   base_commarea_map() +
+#   facet_wrap(~ type)
+#
+# bind_rows(wday_morn_start %>% mutate(type = "morn") %>% rename(community = "start_commarea"),
+#           wday_morn_end %>% mutate(type = "night") %>%  rename(community = "end_commarea")) %>%
+#   group_by(type, community) %>%
+#   mutate(avg = total/num_days) %>%
+#   base_commarea_map() +
+#   facet_wrap(~ type)
+
+area_map %>%
+  inner_join(wday_morn_start, by = c("community" = "start_commarea")) %>%
+  group_by(community) %>%
+  mutate(avg = total/num_days ) %>%
+  base_commarea_map() +
+area_map %>%
+  inner_join(wday_morn_end, by = c("community" = "end_commarea")) %>%
+  group_by(community) %>%
+  mutate(avg = total/num_days ) %>%
+  base_commarea_map(palette = "inferno") +
+  plot_layout(nrow = 1)
+
+
+
+area_map %>%
+  inner_join(wday_night_start, by = c("community" = "start_commarea")) %>%
+  group_by(community) %>%
+  mutate(avg = total/num_days ) %>%
+  base_commarea_map(palette = "inferno") +
+
+area_map %>%
+  inner_join(wday_night_end, by = c("community" = "end_commarea")) %>%
+  group_by(community) %>%
+  mutate(avg = total/num_days ) %>%
+  base_commarea_map(palette = "inferno") +
+  plot_layout(nrow = 1)
+
+
+
+
+# heatmap of morning and night start/end community areas ----
+
+wday_morn_ctc <- query("SELECT
+                         hour,
+                         ss.commarea AS start_commarea,
+                         es.commarea AS end_commarea,
+                         SUM(trips) AS total,
+                         COUNT(DISTINCT date) AS num_days
+                       FROM weekday_sts_hourly w,
+                       stations es,
+                       stations ss
+                       WHERE w.start_station_id = ss.id
+                        AND w.end_station_id = es.id
+                        AND hour BETWEEN 6 and 9
+                       GROUP BY hour, start_commarea, end_commarea")
+
+wday_night_ctc <- query("SELECT
+                         hour,
+                         ss.commarea AS start_commarea,
+                         es.commarea AS end_commarea,
+                         SUM(trips) AS total,
+                         COUNT(DISTINCT date) AS num_days
+                       FROM weekday_sts_hourly w,
+                       stations es,
+                       stations ss
+                       WHERE w.start_station_id = ss.id
+                       AND w.end_station_id = es.id
+                       AND hour BETWEEN 16 and 19
+                       GROUP BY hour, start_commarea, end_commarea")
+
+wday_morn_ctc <- wday_morn_ctc %>%
+  mutate(avg = total/num_days) %>%
+  arrange(desc(avg)) #%>%
+
+wday_night_ctc <- wday_night_ctc %>%
+  mutate(avg = total/num_days) %>%
+  arrange(desc(avg)) #%>%
+
+quantile(wday_morn_ctc$avg, probs = c(0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99)) #top 1% is 16.462
+quantile(wday_night_ctc$avg, probs = c(0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99)) # top 1% is 23.06
+
+png(filename = "output/wday_morn_rush_ctc.png", width = 480, height = 640 )
+wday_morn_ctc %>%
+  mutate(timestamp_xaxis = as.POSIXct(hour * 3600, origin = "1970-01-01", tz = "UTC")) %>%
+  filter(avg >= 16.642) %>%
+  arrange(desc(avg)) %>%
+  ggplot(aes(x = timestamp_xaxis, y = end_commarea)) +
+    geom_tile(aes(fill = avg), colour = "grey20", alpha = 0.8) +
+    scale_fill_viridis(option = "viridis", name = "Average Trips") +
+    scale_x_datetime("", date_breaks = "1 hour", labels = date_format("%l %p")) +
+    scale_y_discrete("", position = "right") +
+    facet_grid(start_commarea ~ ., switch = "y") +
+    theme_bw(base_size = 14) +
+  theme_dark_ds() +
+  ggtitle("Top Percentile of Average Hourly Trips from Community to Community", "Morning Rush Hour (6am - 9am), 2013 - 2017") +
+  theme_colbar() +
+  labs(caption = "delvinso.github.io") +
+  theme(plot.caption = element_text(size = 12))
+dev.off()
+
+png(filename = "output/wday_night_rush_ctc.png", width = 480, height = 640)
+wday_night_ctc %>%
+  mutate(timestamp_xaxis = as.POSIXct(hour * 3600, origin = "1970-01-01", tz = "UTC")) %>%
+  filter(avg >= 16.642) %>%
+  arrange(desc(avg)) %>%
+  ggplot(aes(x = timestamp_xaxis, y = end_commarea)) +
+  geom_tile(aes(fill = avg), colour = "grey20", alpha = 0.8) +
+  scale_fill_viridis(option = "viridis", name = "Average Trips") +
+  scale_x_datetime("", date_breaks = "1 hour", labels = date_format("%l %p")) +
+  scale_y_discrete("", position = "right") +
+  facet_grid(start_commarea ~ ., switch = "y") +
+  theme_bw(base_size = 14) +
+  theme_dark_ds() +
+  ggtitle("Top Percentile of Average Hourly Trips from Community to Community", "Night Rush Hours (4pm - 7pm), 2013 - 2017") +
+  theme_colbar() +
+  labs(caption = "delvinso.github.io") +
+  theme(plot.caption = element_text(size = 12))
+
+
+dev.off()
+
+
+
+
+
+
+
+
+
