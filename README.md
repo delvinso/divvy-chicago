@@ -19,27 +19,20 @@ Downloads the raw trip data from 2013 - 2017 into the sub-directory /data within
 
 `02_import.sql`
 
-###### c) Cleans the raw trip and station data and maps the station data onto community areas and census tracts
+###### c) Cleans the raw trip and station data and maps the station data onto community areas and census tracts.
 
 `03_tables_for_analyses.sql`
-
-
 
 ### Analyses
 
 SQL queries and analyses can be found in `analyses/`.
 
 
-4) 04_get_legs_routes.R 
-
-
-
 #### Static Heat Map of Trips
 
-Additionally, if one wants to recreate the static heat map in ....., look at 04_get_legs_routes.R.
+Additionally, if one wants to recreate the static heat map, look at 04_get_legs_routes.R.
 
 ##### NOTE: This may cost $$$$ with the new pricing changes Google implemented with their Google Maps API mid-July 2018. May want to consider looking into OSRM as a free, open-source alternative.
-
 
 The legs can then be imported using `04_import_legs.sh`, making sure to run it from the top level directory of the repo or
 
